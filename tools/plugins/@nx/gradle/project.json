@@ -1,0 +1,71 @@
+{
+  "name": "tools-plugins-@nx-gradle",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tools/plugins/@nx/gradle/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/tools/plugins/@nx/gradle",
+        "main": "tools/plugins/@nx/gradle/src/index.ts",
+        "tsConfig": "tools/plugins/@nx/gradle/tsconfig.lib.json",
+        "assets": [
+          "tools/plugins/@nx/gradle/*.md",
+          {
+            "input": "./tools/plugins/@nx/gradle/src",
+            "glob": "**/!(*.ts)",
+            "output": "./src"
+          },
+          {
+            "input": "./tools/plugins/@nx/gradle/src",
+            "glob": "**/*.d.ts",
+            "output": "./src"
+          },
+          {
+            "input": "./tools/plugins/@nx/gradle",
+            "glob": "generators.json",
+            "output": "."
+          },
+          {
+            "input": "./tools/plugins/@nx/gradle",
+            "glob": "executors.json",
+            "output": "."
+          }
+        ]
+      }
+    },
+    "publish": {
+      "command": "node tools/scripts/publish.mjs tools-plugins-@nx-gradle {args.ver} {args.tag}",
+      "dependsOn": ["build"]
+    },
+    "lint": {
+      "executor": "@nx/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": [
+          "tools/plugins/@nx/gradle/**/*.ts",
+          "tools/plugins/@nx/gradle/package.json",
+          "tools/plugins/@nx/gradle/generators.json",
+          "tools/plugins/@nx/gradle/executors.json"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "tools/plugins/@nx/gradle/jest.config.ts",
+        "passWithNoTests": true
+      },
+      "configurations": {
+        "ci": {
+          "ci": true,
+          "codeCoverage": true
+        }
+      }
+    }
+  },
+  "tags": []
+}
