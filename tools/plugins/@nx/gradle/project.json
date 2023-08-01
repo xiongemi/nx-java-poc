@@ -1,5 +1,5 @@
 {
-  "name": "tools-plugins-@nx-gradle",
+  "name": "@nx/gradle",
   "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "tools/plugins/@nx/gradle/src",
   "projectType": "library",
@@ -37,7 +37,7 @@
       }
     },
     "publish": {
-      "command": "node tools/scripts/publish.mjs tools-plugins-@nx-gradle {args.ver} {args.tag}",
+      "command": "node tools/scripts/publish.mjs @nx/gradle {args.ver} {args.tag}",
       "dependsOn": ["build"]
     },
     "lint": {

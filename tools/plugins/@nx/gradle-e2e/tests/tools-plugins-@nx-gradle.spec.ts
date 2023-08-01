@@ -14,7 +14,7 @@ describe('tools-plugins-@nx-gradle', () => {
 
   beforeAll(() => {
     const projectName = 'test-project';
-    let projectDirectory = join(process.cwd(), 'tmp', projectName);
+    projectDirectory = join(process.cwd(), 'tmp', projectName);
 
     // Cleanup the test project
     rmSync(projectDirectory, {
@@ -33,10 +33,11 @@ describe('tools-plugins-@nx-gradle', () => {
     });
   });
 
-  afterAll(() => {});
+  afterAll(() => {
+    execInTestProject('code .');
+  });
 
   it('should setup a gradle project', () => {
-    // npm ls will fail if the package is not installed properly
     execInTestProject('nx g @nx/gradle:application api');
     execInTestProject('nx g @nx/gradle:library lib1');
     execInTestProject('nx g @nx/gradle:library lib2');
