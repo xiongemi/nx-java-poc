@@ -2,7 +2,9 @@
   "name": "@nx-java-poc/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "e2e": "nx run tools-plugins-@nx-gradle-e2e:e2e"
+  },
   "private": true,
   "devDependencies": {
     "@nx/eslint-plugin": "16.6.0",
