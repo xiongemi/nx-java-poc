@@ -38,10 +38,13 @@ describe('tools-plugins-@nx-gradle', () => {
   });
 
   it('should setup a gradle project', () => {
-    execInTestProject('nx g @nx/gradle:application api');
-    execInTestProject('nx g @nx/gradle:library lib1');
-    execInTestProject('nx g @nx/gradle:library lib2');
-    execInTestProject('nx build api');
+    ['java', 'groovy', 'kotlin'].forEach((language, index) => {
+      execInTestProject(
+        `nx g @nx/gradle:application app-${language} --language=${language} --dsl=groovy --javaVersion=18 --sourcePackage=com.app${index} --rootProjectName=test`
+      );
+    });
+    execInTestProject('chmod 755 gradlew gradlew.bat');
+    execInTestProject('./gradlew build');
   });
 });
 
