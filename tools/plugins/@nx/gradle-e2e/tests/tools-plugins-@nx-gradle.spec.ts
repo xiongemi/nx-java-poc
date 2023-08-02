@@ -43,7 +43,6 @@ describe('tools-plugins-@nx-gradle', () => {
         `nx g @nx/gradle:application app-${language} --language=${language} --dsl=groovy --javaVersion=18 --sourcePackage=com.app${index} --rootProjectName=test`
       );
     });
-    execInTestProject('chmod 755 gradlew gradlew.bat');
     execInTestProject('./gradlew build');
   });
 });

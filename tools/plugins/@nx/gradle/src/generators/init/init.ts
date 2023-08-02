@@ -35,6 +35,11 @@ export async function initGenerator(tree: Tree, options: InitGeneratorSchema) {
   if (!tree.exists('gradle')) {
     // add gradle files at workspace root
     generateFiles(tree, join(__dirname, 'files/root'), '.', options);
+
+    for (const gradleExecutable of ['gradlew', 'gradlew.bat']) {
+      // Read and Execute, not alter
+      tree.changePermissions(gradleExecutable, '755');
+    }
   }
   addGitIgnoreEntry(tree);
   addGitAttributesEntry(tree);
