@@ -1,6 +1,5 @@
-import { formatFiles, generateFiles, Tree } from '@nx/devkit';
+import { formatFiles, Tree } from '@nx/devkit';
 import { InitGeneratorSchema } from './schema';
-import { join } from 'node:path';
 
 const ktorVersion = '2.3.3';
 const kotlinVersion = '1.9.0';

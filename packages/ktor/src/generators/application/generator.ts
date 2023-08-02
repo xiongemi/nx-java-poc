@@ -6,10 +6,10 @@ import {
   updateProjectConfiguration,
 } from '@nx/devkit';
 import { KtorApplicationGeneratorSchema } from './schema';
-import { gradleProjectGenerator } from '@nx/gradle';
 import { join } from 'node:path';
 import { normalizeOptions } from './normalize-schema';
 import initGenerator from '../init/generator';
+import { gradleProjectGenerator } from '@nx/gradle/generators';
 
 export async function applicationGenerator(
   tree: Tree,

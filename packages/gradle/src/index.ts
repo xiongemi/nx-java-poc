@@ -1,1 +1,1 @@
-export * from './generators/gradle-project/generator';
+export { processProjectGraph } from './project-graph/dependencies';

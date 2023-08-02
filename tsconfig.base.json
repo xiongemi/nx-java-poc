@@ -15,6 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@nx/gradle/generators": ["packages/gradle/generators"],
       "@nx/gradle": ["packages/gradle/src/index.ts"],
       "@nx/ktor": ["packages/ktor/src/index.ts"]
     }

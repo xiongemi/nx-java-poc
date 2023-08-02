@@ -1,4 +1,10 @@
-import { convertNxGenerator, generateFiles, Tree } from '@nx/devkit';
+import {
+  convertNxGenerator,
+  generateFiles,
+  readNxJson,
+  Tree,
+  updateNxJson,
+} from '@nx/devkit';
 import { join } from 'path';
 import { InitGeneratorSchema } from './schema';
 import { addGitAttributesEntry, addGitIgnoreEntry } from './add-git-entry';
@@ -24,6 +30,13 @@ export async function initGenerator(tree: Tree, options: InitGeneratorSchema) {
   }
   addGitIgnoreEntry(tree);
   addGitAttributesEntry(tree);
+
+  const nxJson = readNxJson(tree);
+
+  updateNxJson(tree, {
+    ...nxJson,
+    plugins: Array.from(new Set([...(nxJson.plugins ?? []), '@nx/gradle'])),
+  });
 }
 
 export default initGenerator;
