@@ -4,7 +4,7 @@ import {
   ProjectGraphProcessorContext,
 } from '@nx/devkit';
 import { execGradle } from '../utils/exec-gradle';
-import { basename } from 'node:path';
+import { basename, dirname } from 'node:path';
 
 export function processProjectGraph(
   graph: ProjectGraph,
@@ -15,50 +15,54 @@ export function processProjectGraph(
 
   for (const dep of dependencies) {
     try {
-      builder.addStaticDependency(dep.source, dep.target);
+      builder.addStaticDependency(dep.source, dep.target, dep.file);
     } catch {}
   }
 
   return builder.getUpdatedProjectGraph();
 }
 
+const gradleConfigFileNames = new Set(['build.gradle', 'build.gradle.kts']);
+
 function locateDependencies(
   graph: ProjectGraph,
   { filesToProcess, projectsConfigurations }: ProjectGraphProcessorContext
 ) {
-  const dependencies: { source: string; target: string }[] = [];
+  const dependencies: { source: string; target: string; file: string }[] = [];
   for (const [source, files] of Object.entries(filesToProcess)) {
-    const hasGradleFile = files.some(
-      (f) => basename(f.file) === 'build.gradle.kts'
-    );
-
-    if (hasGradleFile) {
-      const projectRoot = projectsConfigurations.projects[source].root;
-      const lines = execGradle(['dependencies'], {
-        cwd: projectRoot,
-      })
-        .toString()
-        .split('\n');
-      let inDeps = false;
-      for (const line of lines) {
-        if (line.startsWith('implementation ')) {
-          inDeps = true;
-          continue;
-        }
-
-        if (inDeps) {
-          if (line === '') {
-            inDeps = false;
+    for (const file of files) {
+      if (gradleConfigFileNames.has(basename(file.file))) {
+        const projectRoot = dirname(file.file);
+        const lines = execGradle(['dependencies'], {
+          cwd: projectRoot,
+        })
+          .toString()
+          .split('\n');
+        let inDeps = false;
+        for (const line of lines) {
+          if (line.startsWith('implementation ')) {
+            inDeps = true;
             continue;
           }
-          const [indents, dep] = line.split('---');
-          if (indents === '\\') {
-            const target = dep.replace(/ \(n\)$/, '').trim();
-            console.log(source, '=>', target);
-            dependencies.push({
-              source: source,
-              target,
-            });
+
+          if (inDeps) {
+            if (line === '') {
+              inDeps = false;
+              continue;
+            }
+            const [indents, dep] = line.split('--- ');
+            if (indents === '\\' && dep.startsWith('project ')) {
+              const target = dep
+                .substring('project '.length)
+                .replace(/ \(n\)$/, '')
+                .trim();
+              console.log(source, '=>', target);
+              dependencies.push({
+                source: source,
+                target,
+                file: file.file,
+              });
+            }
           }
         }
       }
