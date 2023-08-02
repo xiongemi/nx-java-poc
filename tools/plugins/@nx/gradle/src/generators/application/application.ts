@@ -12,13 +12,19 @@ export async function applicationGenerator(
   await initGenerator(tree, {
     name: normalizedOptions.rootProjectName,
     dsl: normalizedOptions.dsl,
-    javaVersion: normalizedOptions.javaVersion,
   });
   addProjectConfiguration(tree, normalizedOptions.name, {
     root: normalizedOptions.appProjectRoot,
     projectType: 'application',
     sourceRoot: `${normalizedOptions.appProjectRoot}/src`,
-    targets: {},
+    targets: {
+      build: {
+        executor: '@nx/gradle:build',
+        options: {
+          gradleProjectName: normalizedOptions.appProjectRoot.replace('/', ':'),
+        },
+      },
+    },
   });
   // add src directory
   generateFiles(
