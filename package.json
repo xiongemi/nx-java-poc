@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "e2e": "nx run tools-plugins-@nx-gradle-e2e:e2e"
+    "e2e": "nx run gradle-e2e:e2e"
   },
   "private": true,
   "devDependencies": {

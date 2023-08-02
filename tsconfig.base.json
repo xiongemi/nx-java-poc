@@ -15,7 +15,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@nx/gradle": ["tools/plugins/@nx/gradle/src/index.ts"]
+      "@nx/gradle": ["packages/gradle/src/index.ts"],
+      "@nx/ktor": ["packages/ktor/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
