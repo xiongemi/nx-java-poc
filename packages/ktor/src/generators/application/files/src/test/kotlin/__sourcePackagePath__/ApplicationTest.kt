@@ -1,0 +1,4 @@
+package <%= sourcePackage %>
+
+class ApplicationTest {
+}

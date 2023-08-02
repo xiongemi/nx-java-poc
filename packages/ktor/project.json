@@ -46,7 +46,8 @@
       "options": {
         "lintFilePatterns": [
           "packages/ktor/**/*.ts",
-          "packages/ktor/package.json"
+          "packages/ktor/package.json",
+          "packages/ktor/generators.json"
         ]
       }
     },

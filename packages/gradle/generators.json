@@ -14,6 +14,11 @@
       "factory": "./src/generators/init/init",
       "schema": "./src/generators/init/schema.json",
       "description": "init generator"
+    },
+    "gradle-project": {
+      "factory": "./src/generators/gradle-project/generator",
+      "schema": "./src/generators/gradle-project/schema.json",
+      "description": "gradle-project generator"
     }
   }
 }

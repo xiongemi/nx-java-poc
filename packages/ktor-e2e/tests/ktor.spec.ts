@@ -2,11 +2,27 @@ import { execSync } from 'child_process';
 import { join, dirname } from 'path';
 import { mkdirSync, rmSync } from 'fs';
 
-describe('ktor', () => {
+describe('tools-plugins-@nx-gradle', () => {
   let projectDirectory: string;
 
+  function execInTestProject(command: string) {
+    return execSync(command, {
+      cwd: projectDirectory,
+      stdio: 'inherit',
+    });
+  }
+
   beforeAll(() => {
-    projectDirectory = createTestProject();
+    const projectName = 'test-project';
+    projectDirectory = join(process.cwd(), 'tmp', projectName);
+
+    // Cleanup the test project
+    rmSync(projectDirectory, {
+      recursive: true,
+      force: true,
+    });
+
+    projectDirectory = createTestProject(projectName, projectDirectory);
 
     // The plugin has been built and published to a local registry in the jest globalSetup
     // Install the plugin built with the latest source code into the test repo
@@ -18,19 +34,15 @@ describe('ktor', () => {
   });
 
   afterAll(() => {
-    // Cleanup the test project
-    rmSync(projectDirectory, {
-      recursive: true,
-      force: true,
-    });
+    execInTestProject('code .');
   });
 
-  it('should be installed', () => {
-    // npm ls will fail if the package is not installed properly
-    execSync('npm ls @nx/ktor', {
-      cwd: projectDirectory,
-      stdio: 'inherit',
-    });
+  it('should setup a ktor project', () => {
+    execInTestProject(
+      `nx g @nx/ktor:application api --javaVersion=18 --sourcePackage=com.example.api --rootProjectName=test`
+    );
+
+    execInTestProject(`nx build api`);
   });
 });
 
@@ -38,10 +50,7 @@ describe('ktor', () => {
  * Creates a test project with create-nx-workspace and installs the plugin
  * @returns The directory where the test project was created
  */
-function createTestProject() {
-  const projectName = 'test-project';
-  const projectDirectory = join(process.cwd(), 'tmp', projectName);
-
+function createTestProject(projectName: string, projectDirectory: string) {
   // Ensure projectDirectory is empty
   rmSync(projectDirectory, {
     recursive: true,

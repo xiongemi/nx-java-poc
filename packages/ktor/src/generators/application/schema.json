@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "$id": "GradleProject",
+  "title": "Gradle Project Generator",
+  "description": "Generate a Gradle project.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The name of the project.",
+      "$default": {
+        "$source": "argv",
+        "index": 0
+      },
+      "x-prompt": "What name would you like to use for the project?",
+      "x-priority": "important"
+    },
+    "directory": {
+      "description": "The directory of the new project.",
+      "type": "string",
+      "alias": "d",
+      "x-priority": "important"
+    },
+    "sourcePackage": {
+      "description": "The package name for source files.",
+      "type": "string",
+      "alias": "p",
+      "x-priority": "important",
+      "examples:": ["com.example", "demo"],
+      "x-prompt": "What is the source package?"
+    },
+    "javaVersion": {
+      "description": "Java version",
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        }
+      ],
+      "x-priority": "important",
+      "default": "18",
+      "x-prompt": "What version of Java would you like to use? (min: 7, default: 18)"
+    },
+    "rootProjectName": {
+      "type": "string",
+      "description": "Root project name",
+      "x-prompt": "What root project name would you like to use?"
+    }
+  },
+  "required": ["name", "sourcePackage"]
+}
