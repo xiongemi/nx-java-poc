@@ -9,6 +9,7 @@ describe('tools-plugins-@nx-gradle', () => {
     return execSync(command, {
       cwd: projectDirectory,
       stdio: 'inherit',
+      env: process.env,
     });
   }
 
@@ -23,14 +24,9 @@ describe('tools-plugins-@nx-gradle', () => {
     });
 
     projectDirectory = createTestProject(projectName, projectDirectory);
+    execInTestProject(`git init`);
 
-    // The plugin has been built and published to a local registry in the jest globalSetup
-    // Install the plugin built with the latest source code into the test repo
-    execSync(`npm install @nx/ktor@e2e`, {
-      cwd: projectDirectory,
-      stdio: 'inherit',
-      env: process.env,
-    });
+    execInTestProject(`npm install @nx/ktor@e2e`);
   });
 
   afterAll(() => {
