@@ -1,6 +1,6 @@
 import { execSync } from 'child_process';
 import { join, dirname } from 'path';
-import { mkdirSync, rmSync } from 'fs';
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
 
 describe('tools-plugins-@nx-gradle', () => {
   let projectDirectory: string;
@@ -26,7 +26,16 @@ describe('tools-plugins-@nx-gradle', () => {
     projectDirectory = createTestProject(projectName, projectDirectory);
     execInTestProject(`git init`);
 
-    execInTestProject(`npm install @nx/ktor@e2e`);
+    const nxJson = JSON.parse(
+      readFileSync(join(projectDirectory, 'nx.json')).toString()
+    );
+    nxJson.installation.plugins = {
+      '@nx/ktor': 'e2e',
+    };
+    writeFileSync(
+      join(projectDirectory, 'nx.json'),
+      JSON.stringify(nxJson, null, 2)
+    );
   });
 
   afterAll(() => {
@@ -35,10 +44,10 @@ describe('tools-plugins-@nx-gradle', () => {
 
   it('should setup a ktor project', () => {
     execInTestProject(
-      `nx g @nx/ktor:application api --javaVersion=18 --sourcePackage=com.example.api --rootProjectName=test`
+      `./nx g @nx/ktor:application api --javaVersion=18 --sourcePackage=com.example.api --rootProjectName=test`
     );
 
-    execInTestProject(`nx build api`);
+    execInTestProject(`./nx build api`);
   });
 });
 
@@ -52,18 +61,15 @@ function createTestProject(projectName: string, projectDirectory: string) {
     recursive: true,
     force: true,
   });
-  mkdirSync(dirname(projectDirectory), {
+  mkdirSync(projectDirectory, {
     recursive: true,
   });
 
-  execSync(
-    `npx --yes create-nx-workspace@latest ${projectName} --preset empty --no-nxCloud --no-interactive`,
-    {
-      cwd: dirname(projectDirectory),
-      stdio: 'inherit',
-      env: process.env,
-    }
-  );
+  execSync(`npx --yes nx@latest init --useDotNxInstallation --no-interactive`, {
+    cwd: projectDirectory,
+    stdio: 'inherit',
+    env: process.env,
+  });
   console.log(`Created test project in "${projectDirectory}"`);
 
   return projectDirectory;

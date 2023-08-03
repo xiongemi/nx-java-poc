@@ -15,14 +15,22 @@ import { detectJavaVersion } from '../utils/java-version';
 import { nxVersion } from '../utils/versions';
 
 function addPackages(tree: Tree) {
-  removeDependenciesFromPackageJson(tree, ['@nx/gradle'], []);
-  return addDependenciesToPackageJson(
-    tree,
-    {},
-    {
-      '@nx/gradle': nxVersion,
-    }
-  );
+  if (tree.exists('package.json')) {
+    removeDependenciesFromPackageJson(tree, ['@nx/gradle'], []);
+    return addDependenciesToPackageJson(
+      tree,
+      {},
+      {
+        '@nx/gradle': nxVersion,
+      }
+    );
+  } else {
+    // .nx installation
+    const nxJson = readNxJson(tree);
+    nxJson.installation.plugins ??= {};
+    nxJson.installation.plugins['@nx/gradle'] = nxVersion;
+    updateNxJson(tree, nxJson);
+  }
 }
 
 export async function initGenerator(tree: Tree, options: InitGeneratorSchema) {
