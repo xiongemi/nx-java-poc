@@ -1,22 +1,22 @@
 {
   "$schema": "http://json-schema.org/schema",
-  "$id": "KtorApplicationGenerator",
-  "title": "Ktor Application Generator",
+  "$id": "KtorLibraryGenerator",
+  "title": "Ktor Library Generator",
   "description": "Generate a Ktor project.",
   "type": "object",
   "properties": {
     "name": {
       "type": "string",
-      "description": "The name of the application.",
+      "description": "The name of the library.",
       "$default": {
         "$source": "argv",
         "index": 0
       },
-      "x-prompt": "What name would you like to use for the application?",
+      "x-prompt": "What name would you like to use for the library?",
       "x-priority": "important"
     },
     "directory": {
-      "description": "The directory of the new application.",
+      "description": "The directory of the new library.",
       "type": "string",
       "alias": "d",
       "x-priority": "important"

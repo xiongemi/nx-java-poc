@@ -1,4 +1,4 @@
-export interface KtorApplicationGeneratorSchema {
+export interface KtorLibraryGeneratorSchema {
   name: string;
   directory?: string;
   sourcePackage: string;

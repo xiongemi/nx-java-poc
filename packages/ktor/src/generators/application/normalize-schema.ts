@@ -1,4 +1,4 @@
-import { Tree, joinPathFragments, names } from '@nx/devkit';
+import { joinPathFragments, names } from '@nx/devkit';
 import { KtorApplicationGeneratorSchema } from './schema';
 
 export interface NormalizedSchema extends KtorApplicationGeneratorSchema {
@@ -10,7 +10,6 @@ export interface NormalizedSchema extends KtorApplicationGeneratorSchema {
 }
 
 export function normalizeOptions(
-  host: Tree,
   options: KtorApplicationGeneratorSchema
 ): NormalizedSchema {
   const { fileName: appFileName, className: appClassName } = names(

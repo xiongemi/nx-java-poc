@@ -44,10 +44,16 @@ describe('tools-plugins-@nx-gradle', () => {
 
   it('should setup a ktor project', () => {
     execInTestProject(
-      `./nx g @nx/ktor:application api --javaVersion=18 --sourcePackage=com.example.api --rootProjectName=test`
+      `./nx g @nx/ktor:application api --sourcePackage=com.example --rootProjectName=test`
+    );
+    execInTestProject(
+      `./nx g @nx/ktor:library lib --sourcePackage=com.example --rootProjectName=test`
     );
 
     execInTestProject(`./nx build api`);
+    execInTestProject(`./nx build lib`);
+    execInTestProject(`./nx test api`);
+    execInTestProject(`./nx test lib`);
   });
 });
 

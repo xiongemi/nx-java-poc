@@ -15,7 +15,7 @@ export async function applicationGenerator(
   tree: Tree,
   options: KtorApplicationGeneratorSchema
 ) {
-  const normalizedOptions = normalizeOptions(tree, options);
+  const normalizedOptions = normalizeOptions(options);
   const task = await gradleProjectGenerator(tree, {
     ...normalizedOptions,
     projectType: 'application',
