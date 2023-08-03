@@ -30,6 +30,9 @@ function addPackages(tree: Tree) {
     nxJson.installation.plugins ??= {};
     nxJson.installation.plugins['@nx/gradle'] = nxVersion;
     updateNxJson(tree, nxJson);
+    return () => {
+      /* noop */
+    };
   }
 }
 
@@ -54,9 +57,9 @@ export async function initGenerator(tree: Tree, options: InitGeneratorSchema) {
   addGitIgnoreEntry(tree);
   addGitAttributesEntry(tree);
 
-  const nxJson = readNxJson(tree);
   const installTask = addPackages(tree);
 
+  const nxJson = readNxJson(tree);
   updateNxJson(tree, {
     ...nxJson,
     plugins: Array.from(new Set([...(nxJson.plugins ?? []), '@nx/gradle'])),
