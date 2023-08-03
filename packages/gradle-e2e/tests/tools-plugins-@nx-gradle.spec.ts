@@ -47,6 +47,9 @@ describe('tools-plugins-@nx-gradle', () => {
       );
 
       execInTestProject(`nx build app-${language}`);
+      execInTestProject(`nx build lib-${language}`);
+      execInTestProject(`nx test app-${language}`);
+      execInTestProject(`nx test lib-${language}`);
     });
   });
 });

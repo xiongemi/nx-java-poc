@@ -24,6 +24,12 @@ export async function gradleProjectGenerator(
           gradleProjectName: normalizedOptions.projectRoot.replace('/', ':'),
         },
       },
+      test: {
+        executor: '@nx/gradle:test',
+        options: {
+          gradleProjectName: normalizedOptions.projectRoot.replace('/', ':'),
+        },
+      }
     },
   });
 
