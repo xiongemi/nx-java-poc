@@ -6,8 +6,13 @@
  */
 
 plugins {
+<% if (projectType === 'application') { %>
     // Apply the application plugin to add support for building a CLI application in Java.
     application
+<% } else if (projectType === 'library') { %>
+    // Apply the java-library plugin for API and implementation separation.
+    `java-library`
+<% } %>
 }
 
 repositories {
@@ -22,8 +27,9 @@ dependencies {
     // This dependency is used by the application.
     implementation("com.google.guava:guava:31.1-jre")
 }
-
+<% if (projectType === 'application') { %>
 application {
     // Define the main class for the application.
-    mainClass.set("<%= sourcePackage %>.<%= appClassName %>")
+    mainClass.set("<%= sourcePackage %>.<%= projectClassName %>")
 }
+<% } %>

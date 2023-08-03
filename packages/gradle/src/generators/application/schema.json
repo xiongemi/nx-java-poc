@@ -43,20 +43,6 @@
       "default": "groovy",
       "x-prompt": "What build script DSL would you like to use?"
     },
-    "javaVersion": {
-      "description": "Java version",
-      "oneOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "number"
-        }
-      ],
-      "x-priority": "important",
-      "default": "18",
-      "x-prompt": "What version of Java would you like to use? (min: 7, default: 18)"
-    },
     "rootProjectName": {
       "type": "string",
       "description": "Root project name",

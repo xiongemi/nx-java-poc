@@ -8,9 +8,13 @@
 plugins {
     // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
     id("org.jetbrains.kotlin.jvm") version "1.8.20"
-
+<% if (projectType === 'application') { %>
     // Apply the application plugin to add support for building a CLI application in Java.
     application
+<% } else if (projectType === 'library') { %>
+    // Apply the java-library plugin for API and implementation separation.
+    `java-library`
+<% } %>
 }
 
 repositories {
@@ -30,12 +34,12 @@ dependencies {
     // This dependency is used by the application.
     implementation("com.google.guava:guava:31.1-jre")
 }
-
+<% if (projectType === 'application') { %>
 application {
     // Define the main class for the application.
-    mainClass.set("<%= sourcePackage %>.<%= appClassName %>")
+    mainClass.set("<%= sourcePackage %>.<%= projectClassName %>Kt")
 }
-
+<% } %>
 tasks.named<Test>("test") {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()

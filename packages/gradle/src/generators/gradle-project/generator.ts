@@ -14,25 +14,19 @@ export async function gradleProjectGenerator(
     dsl: normalizedOptions.dsl,
   });
   addProjectConfiguration(tree, normalizedOptions.name, {
-    root: normalizedOptions.appProjectRoot,
-    projectType: 'application',
-    sourceRoot: `${normalizedOptions.appProjectRoot}/src`,
+    root: normalizedOptions.projectRoot,
+    projectType: options.projectType,
+    sourceRoot: `${normalizedOptions.projectRoot}/src`,
     targets: {
       build: {
         executor: '@nx/gradle:build',
         options: {
-          gradleProjectName: normalizedOptions.appProjectRoot.replace('/', ':'),
+          gradleProjectName: normalizedOptions.projectRoot.replace('/', ':'),
         },
       },
     },
   });
-  // add src directory
-  generateFiles(
-    tree,
-    join(__dirname, 'files', normalizedOptions.language, 'src'),
-    join(normalizedOptions.appProjectRoot, 'src'),
-    normalizedOptions
-  );
+
   // add app's build.gradle or build.gradle.kts file
   generateFiles(
     tree,
@@ -43,7 +37,7 @@ export async function gradleProjectGenerator(
       'build',
       normalizedOptions.dsl
     ),
-    normalizedOptions.appProjectRoot,
+    normalizedOptions.projectRoot,
     normalizedOptions
   );
 
@@ -57,8 +51,8 @@ function addToSettings(tree: Tree, options: NormalizedSchema) {
   if (!settings) {
     throw new Error(`Could not find ${settingsPath}`);
   }
-  if (!settings.includes(options.appSettingName)) {
-    settings += `\ninclude("${options.appSettingName}")`;
+  if (!settings.includes(options.projectSettingName)) {
+    settings += `\ninclude("${options.projectSettingName}")`;
     tree.write(settingsPath, settings);
   }
 }

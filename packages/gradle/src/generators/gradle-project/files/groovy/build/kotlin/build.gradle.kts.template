@@ -8,9 +8,13 @@
 plugins {
     // Apply the groovy Plugin to add support for Groovy.
     groovy
-
+<% if (projectType === 'application') { %>
     // Apply the application plugin to add support for building a CLI application in Java.
     application
+<% } else if (projectType === 'library') { %>
+    // Apply the java-library plugin for API and implementation separation.
+    `java-library`
+<% } %>
 }
 
 repositories {
@@ -31,12 +35,12 @@ dependencies {
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
-
+<% if (projectType === 'application') { %>
 application {
     // Define the main class for the application.
-    mainClass.set("<%= sourcePackage %>.<%= appClassName %>")
+    mainClass.set("<%= sourcePackage %>.<%= projectClassName %>")
 }
-
+<% } %>
 tasks.named<Test>("test") {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()

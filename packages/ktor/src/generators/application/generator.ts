@@ -18,6 +18,7 @@ export async function applicationGenerator(
   const normalizedOptions = normalizeOptions(tree, options);
   const task = await gradleProjectGenerator(tree, {
     ...normalizedOptions,
+    projectType: 'application',
     language: 'kotlin',
     dsl: 'kotlin',
   });

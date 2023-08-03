@@ -4,6 +4,5 @@ export interface ApplicationGeneratorSchema {
   language: 'java' | 'kotlin' | 'groovy';
   sourcePackage: string;
   dsl: 'groovy' | 'kotlin';
-  javaVersion: string | number;
   rootProjectName: string;
 }

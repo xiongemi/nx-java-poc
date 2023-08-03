@@ -1,18 +1,53 @@
 {
   "$schema": "http://json-schema.org/schema",
-  "$id": "Library",
-  "title": "",
+  "$id": "GradleLibrary",
+  "title": "Gradle Library Generator",
+  "description": "Generate a Gradle library.",
   "type": "object",
   "properties": {
     "name": {
       "type": "string",
-      "description": "",
+      "description": "The name of the library.",
       "$default": {
         "$source": "argv",
         "index": 0
       },
-      "x-prompt": "What name would you like to use?"
+      "x-prompt": "What name would you like to use for the library?",
+      "x-priority": "important"
+    },
+    "directory": {
+      "description": "The directory of the new library.",
+      "type": "string",
+      "alias": "d",
+      "x-priority": "important"
+    },
+    "language": {
+      "description": "Implementation language",
+      "type": "string",
+      "enum": ["java", "groovy", "kotlin"],
+      "x-prompt": "What is the implementation language?",
+      "x-priority": "important"
+    },
+    "sourcePackage": {
+      "description": "The package name for source files.",
+      "type": "string",
+      "alias": "p",
+      "x-priority": "important",
+      "examples:": ["com.example", "demo"],
+      "x-prompt": "What is the source package?"
+    },
+    "dsl": {
+      "type": "string",
+      "description": "The build script DSL to use.",
+      "enum": ["groovy", "kotlin"],
+      "default": "groovy",
+      "x-prompt": "What build script DSL would you like to use?"
+    },
+    "rootProjectName": {
+      "type": "string",
+      "description": "Root project name",
+      "x-prompt": "What root project name would you like to use?"
     }
   },
-  "required": ["name"]
+  "required": ["name", "language", "sourcePackage"]
 }

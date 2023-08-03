@@ -8,8 +8,7 @@ describe('init generator', () => {
   let tree: Tree;
   const options: InitGeneratorSchema = {
     name: 'test',
-    dsl: 'groovy',
-    javaVersion: '18',
+    dsl: 'groovy'
   };
 
   beforeEach(() => {

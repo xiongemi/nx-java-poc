@@ -40,7 +40,10 @@ describe('tools-plugins-@nx-gradle', () => {
   it('should setup a gradle project', () => {
     ['java', 'groovy', 'kotlin'].forEach((language, index) => {
       execInTestProject(
-        `nx g @nx/gradle:application app-${language} --language=${language} --dsl=groovy --javaVersion=18 --sourcePackage=com.app${index} --rootProjectName=test`
+        `nx g @nx/gradle:application app-${language} --language=${language} --dsl=groovy --sourcePackage=com.app${index} --rootProjectName=test`
+      );
+      execInTestProject(
+        `nx g @nx/gradle:library lib-${language} --language=${language} --dsl=groovy --sourcePackage=com.app${index} --rootProjectName=test`
       );
 
       execInTestProject(`nx build app-${language}`);

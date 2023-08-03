@@ -6,7 +6,7 @@
       "description": "application generator"
     },
     "library": {
-      "factory": "./src/generators/library/generator",
+      "factory": "./src/generators/library/library",
       "schema": "./src/generators/library/schema.json",
       "description": "library generator"
     },

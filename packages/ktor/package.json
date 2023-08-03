@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "dependencies": {
     "@nx/devkit": "16.6.0",
-    "@nx/gradle": "*",
+    "@nx/gradle": "file:../gradle",
     "tslib": "^2.3.0"
   },
   "type": "commonjs",
