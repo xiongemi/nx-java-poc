@@ -5,13 +5,14 @@ import {
   ProjectGraphProcessorContext,
   workspaceRoot,
 } from '@nx/devkit';
-import { execGradleAsync } from '../utils/exec-gradle';
+import { execGradle, execGradleAsync } from '../utils/exec-gradle';
 import { basename, dirname, relative } from 'node:path';
 import {
   createProjectRootMappings,
   findProjectForPath,
   ProjectRootMappings,
 } from 'nx/src/project-graph/utils/find-project-for-path';
+import { readFileSync } from 'node:fs';
 
 export async function processProjectGraph(
   graph: ProjectGraph,
@@ -49,6 +50,94 @@ function findGradleFiles(filesToProcess: ProjectFileMap) {
   return gradleFiles;
 }
 
+function processProjectReports(
+  projectReportLines: string[],
+  projectRootMappings: Map<string, string>
+) {
+  const gradleProjectToNxProjectMap = new Map<string, string>();
+  const buildFileToNxProjectMap = new Map<string, string>();
+  const dependenciesMap = new Map<string, string>();
+  const buildFileToDepsMap = new Map<string, string>();
+  projectReportLines.forEach((line, index) => {
+    if (line.startsWith('> Task ')) {
+      const nextLine = projectReportLines[index + 1];
+      if (line.endsWith(':dependencyReport')) {
+        const gradleProject = line.substring(
+          '> Task '.length,
+          line.length - ':dependencyReport'.length
+        );
+        const [_, file] = nextLine.split('file://');
+        dependenciesMap.set(gradleProject, file);
+      }
+      if (line.endsWith('propertyReport')) {
+        const gradleProject = line.substring(
+          '> Task '.length,
+          line.length - ':propertyReport'.length
+        );
+        const [_, file] = nextLine.split('file://');
+        const absBuildFilePath = readFileSync(file)
+          .toString()
+          .split('\n')
+          .find((line) => {
+            return line.startsWith('buildFile: ');
+          })
+          ?.substring('buildFile: '.length);
+        if (!absBuildFilePath) {
+          return;
+        }
+        const buildFile = relative(workspaceRoot, absBuildFilePath);
+        buildFileToDepsMap.set(buildFile, dependenciesMap.get(gradleProject));
+        const nxProject = findProjectForPath(buildFile, projectRootMappings);
+        gradleProjectToNxProjectMap.set(gradleProject, nxProject);
+        buildFileToNxProjectMap.set(buildFile, nxProject);
+      }
+    }
+  });
+  return { gradleProjectToNxProjectMap, buildFileToDepsMap };
+}
+
+function processGradleDependencies(
+  depsFile: string,
+  gradleProjectToNxProjectMap: Map<string, string>,
+  source: string,
+  gradleFile: string
+) {
+  const dependencies: {
+    source: string;
+    target: string;
+    file: string;
+  }[] = [];
+  const lines = readFileSync(depsFile).toString().split('\n');
+  let inDeps = false;
+  for (const line of lines) {
+    if (line.startsWith('implementationDependenciesMetadata')) {
+      inDeps = true;
+      continue;
+    }
+
+    if (inDeps) {
+      if (line === '') {
+        inDeps = false;
+        continue;
+      }
+      const [indents, dep] = line.split('--- ');
+      if ((indents === '\\' || indents === '+') && dep.startsWith('project ')) {
+        const gradleProjectName = dep
+          .substring('project '.length)
+          .replace(/ \(n\)$/, '')
+          .trim();
+        const target = gradleProjectToNxProjectMap.get(gradleProjectName);
+        dependencies.push({
+          source: source,
+          target,
+          file: gradleFile,
+        });
+      }
+    }
+  }
+  return dependencies;
+}
+
 async function locateDependencies(
   projectRootMappings: ProjectRootMappings,
   { filesToProcess }: ProjectGraphProcessorContext
@@ -59,75 +148,34 @@ async function locateDependencies(
     file: string;
   }[]
 > {
+  let dependencies: {
+    source: string;
+    target: string;
+    file: string;
+  }[] = [];
+  console.time('executing gradle commands');
+  const projectReportLines = (await execGradleAsync(['projectReport'], {}))
+    .toString()
+    .split('\n');
+  console.timeEnd('executing gradle commands');
+  const { gradleProjectToNxProjectMap, buildFileToDepsMap } =
+    processProjectReports(projectReportLines, projectRootMappings);
+
   const gradleFiles = findGradleFiles(filesToProcess);
-  return (
-    await Promise.all(
-      gradleFiles.map(async ([source, gradleFile]) => {
-        const projectRoot = dirname(gradleFile);
-        console.time('getting gradle dependencies for ' + projectRoot);
-        const lines = (
-          await execGradleAsync(
-            [
-              'dependencies',
-              '--configuration=implementationDependenciesMetadata',
-            ],
-            {
-              cwd: projectRoot,
-            }
-          )
-        )
-          .toString()
-          .split('\n');
-        console.timeEnd('getting gradle dependencies for ' + projectRoot);
-        let inDeps = false;
-        const gradleProjectDependencies: string[] = [];
-        console.time('processing output for ' + projectRoot);
-        for (const line of lines) {
-          if (line.startsWith('implementationDependenciesMetadata')) {
-            inDeps = true;
-            continue;
-          }
 
-          if (inDeps) {
-            if (line === '') {
-              inDeps = false;
-              continue;
-            }
-            const [indents, dep] = line.split('--- ');
-            if (
-              (indents === '\\' || indents === '+') &&
-              dep.startsWith('project ')
-            ) {
-              const targetGradleProjectName = dep
-                .substring('project '.length)
-                .replace(/ \(n\)$/, '')
-                .trim();
-              gradleProjectDependencies.push(targetGradleProjectName);
-            }
-          }
-        }
-        console.timeEnd('processing output for ' + projectRoot);
+  for (const [source, gradleFile] of gradleFiles) {
+    const depsFile = buildFileToDepsMap.get(gradleFile);
 
-        console.time('getting nx names for ' + projectRoot);
-        const deps = Promise.all(
-          gradleProjectDependencies.map(async (gradleProjectName) => {
-            const target = await getNxProjectName(
-              gradleProjectName,
-              projectRootMappings
-            );
-            return {
-              source: source,
-              target,
-              file: gradleFile,
-            };
-          })
-        );
-        console.timeEnd('getting nx names for ' + projectRoot);
-
-        return deps;
-      })
-    )
-  ).flat();
+    dependencies = dependencies.concat(
+      processGradleDependencies(
+        depsFile,
+        gradleProjectToNxProjectMap,
+        source,
+        gradleFile
+      )
+    );
+  }
+  return dependencies;
 }
 
 const gradleToNxProjectMap = new Map<string, string>();
