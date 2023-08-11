@@ -26,9 +26,6 @@ dependencies {
     // Use the latest Groovy version for building this library
     implementation 'org.codehaus.groovy:groovy-all:3.0.15'
 
-    // This dependency is used by the application.
-    implementation 'com.google.guava:guava:31.1-jre'
-
     // Use the awesome Spock testing and specification framework even with Java
     testImplementation 'org.spockframework:spock-core:2.2-groovy-3.0'
     testImplementation 'junit:junit:4.13.2'
