@@ -20,16 +20,12 @@ export async function gradleProjectGenerator(
     targets: {
       build: {
         executor: '@nx/gradle:build',
-        options: {
-          gradleProjectName: normalizedOptions.projectRoot.replace('/', ':'),
-        },
+        options: {},
       },
       test: {
         executor: '@nx/gradle:test',
-        options: {
-          gradleProjectName: normalizedOptions.projectRoot.replace('/', ':'),
-        },
-      }
+        options: {},
+      },
     },
   });
 
