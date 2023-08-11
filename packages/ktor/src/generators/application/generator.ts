@@ -23,23 +23,6 @@ export async function applicationGenerator(
     dsl: 'kotlin',
   });
 
-  const projectConfiguration = readProjectConfiguration(
-    tree,
-    normalizedOptions.name
-  );
-
-  projectConfiguration.targets.serve = {
-    dependsOn: ['build'],
-    executor: '@nx/gradle:run',
-    options: {},
-  };
-
-  updateProjectConfiguration(
-    tree,
-    normalizedOptions.name,
-    projectConfiguration
-  );
-
   await initGenerator(tree, { skipFormat: true });
 
   generateFiles(

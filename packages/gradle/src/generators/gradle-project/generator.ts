@@ -18,6 +18,15 @@ export async function gradleProjectGenerator(
     projectType: options.projectType,
     sourceRoot: `${normalizedOptions.projectRoot}/src`,
     targets: {
+      ...(options.projectType === 'application'
+        ? {
+            run: {
+              dependsOn: ['build'],
+              executor: '@nx/gradle:run',
+              options: {},
+            },
+          }
+        : {}),
       build: {
         executor: '@nx/gradle:build',
         options: {},
