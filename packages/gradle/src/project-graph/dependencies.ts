@@ -6,6 +6,7 @@ import {
   ProjectGraphBuilder,
   ProjectGraphDependencyWithFile,
   ProjectGraphProcessorContext,
+  validateDependency,
   workspaceRoot,
 } from '@nx/devkit';
 import { execGradleAsync } from '../utils/exec-gradle';
@@ -19,7 +20,8 @@ import { readFileSync } from 'node:fs';
 
 export const createDependencies = async ({
   filesToProcess,
-}: Pick<CreateDependenciesContext, 'filesToProcess'>) => {
+  graph,
+}: Pick<CreateDependenciesContext, 'filesToProcess' | 'graph'>) => {
   const projectRootMappings = createProjectRootMappings(graph.nodes);
   let dependencies: ProjectGraphDependencyWithFile[] = [];
   console.time('executing gradle commands');
@@ -40,7 +42,8 @@ export const createDependencies = async ({
         depsFile,
         gradleProjectToNxProjectMap,
         source,
-        gradleFile
+        gradleFile,
+        graph
       )
     );
   }
@@ -55,15 +58,12 @@ export async function processProjectGraph(
   console.time('locating gradle dependencies');
   const dependencies = await createDependencies({
     filesToProcess: context.filesToProcess,
+    graph,
   });
   console.timeEnd('locating gradle dependencies');
 
   for (const dep of dependencies) {
-    try {
-      builder.addStaticDependency(dep.source, dep.target, dep.sourceFile);
-    } catch {
-      /* noop */
-    }
+    builder.addStaticDependency(dep.source, dep.target, dep.sourceFile);
   }
 
   return builder.getUpdatedProjectGraph();
@@ -134,7 +134,8 @@ function processGradleDependencies(
   depsFile: string,
   gradleProjectToNxProjectMap: Map<string, string>,
   source: string,
-  gradleFile: string
+  gradleFile: string,
+  graph: ProjectGraph
 ) {
   const dependencies: ProjectGraphDependencyWithFile[] = [];
   const lines = readFileSync(depsFile).toString().split('\n');
@@ -157,12 +158,18 @@ function processGradleDependencies(
           .replace(/ \(n\)$/, '')
           .trim();
         const target = gradleProjectToNxProjectMap.get(gradleProjectName);
-        dependencies.push({
+        const dependency: ProjectGraphDependencyWithFile = {
           source: source,
           target,
           dependencyType: DependencyType.static,
           sourceFile: gradleFile,
-        });
+        };
+        try {
+          validateDependency(graph, dependency);
+          dependencies.push(dependency);
+        } catch {
+          /* empty */
+        }
       }
     }
   }
