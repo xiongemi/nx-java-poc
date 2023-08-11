@@ -1,12 +1,15 @@
 import {
+  CreateDependenciesContext,
+  DependencyType,
   ProjectFileMap,
   ProjectGraph,
   ProjectGraphBuilder,
+  ProjectGraphDependencyWithFile,
   ProjectGraphProcessorContext,
   workspaceRoot,
 } from '@nx/devkit';
-import { execGradle, execGradleAsync } from '../utils/exec-gradle';
-import { basename, dirname, relative } from 'node:path';
+import { execGradleAsync } from '../utils/exec-gradle';
+import { basename, relative } from 'node:path';
 import {
   createProjectRootMappings,
   findProjectForPath,
@@ -14,19 +17,50 @@ import {
 } from 'nx/src/project-graph/utils/find-project-for-path';
 import { readFileSync } from 'node:fs';
 
+export const createDependencies = async ({
+  filesToProcess,
+}: Pick<CreateDependenciesContext, 'filesToProcess'>) => {
+  const projectRootMappings = createProjectRootMappings(graph.nodes);
+  let dependencies: ProjectGraphDependencyWithFile[] = [];
+  console.time('executing gradle commands');
+  const projectReportLines = (await execGradleAsync(['projectReport'], {}))
+    .toString()
+    .split('\n');
+  console.timeEnd('executing gradle commands');
+  const { gradleProjectToNxProjectMap, buildFileToDepsMap } =
+    processProjectReports(projectReportLines, projectRootMappings);
+
+  const gradleFiles = findGradleFiles(filesToProcess);
+
+  for (const [source, gradleFile] of gradleFiles) {
+    const depsFile = buildFileToDepsMap.get(gradleFile);
+
+    dependencies = dependencies.concat(
+      processGradleDependencies(
+        depsFile,
+        gradleProjectToNxProjectMap,
+        source,
+        gradleFile
+      )
+    );
+  }
+  return dependencies;
+};
+
 export async function processProjectGraph(
   graph: ProjectGraph,
   context: ProjectGraphProcessorContext
 ) {
   const builder = new ProjectGraphBuilder(graph, context.fileMap);
-  const projectRootMappings = createProjectRootMappings(graph.nodes);
   console.time('locating gradle dependencies');
-  const dependencies = await locateDependencies(projectRootMappings, context);
+  const dependencies = await createDependencies({
+    filesToProcess: context.filesToProcess,
+  });
   console.timeEnd('locating gradle dependencies');
 
   for (const dep of dependencies) {
     try {
-      builder.addStaticDependency(dep.source, dep.target, dep.file);
+      builder.addStaticDependency(dep.source, dep.target, dep.sourceFile);
     } catch {
       /* noop */
     }
@@ -102,11 +136,7 @@ function processGradleDependencies(
   source: string,
   gradleFile: string
 ) {
-  const dependencies: {
-    source: string;
-    target: string;
-    file: string;
-  }[] = [];
+  const dependencies: ProjectGraphDependencyWithFile[] = [];
   const lines = readFileSync(depsFile).toString().split('\n');
   let inDeps = false;
   for (const line of lines) {
@@ -130,50 +160,11 @@ function processGradleDependencies(
         dependencies.push({
           source: source,
           target,
-          file: gradleFile,
+          dependencyType: DependencyType.static,
+          sourceFile: gradleFile,
         });
       }
     }
-  }
-  return dependencies;
-}
-
-async function locateDependencies(
-  projectRootMappings: ProjectRootMappings,
-  { filesToProcess }: ProjectGraphProcessorContext
-): Promise<
-  {
-    source: string;
-    target: string;
-    file: string;
-  }[]
-> {
-  let dependencies: {
-    source: string;
-    target: string;
-    file: string;
-  }[] = [];
-  console.time('executing gradle commands');
-  const projectReportLines = (await execGradleAsync(['projectReport'], {}))
-    .toString()
-    .split('\n');
-  console.timeEnd('executing gradle commands');
-  const { gradleProjectToNxProjectMap, buildFileToDepsMap } =
-    processProjectReports(projectReportLines, projectRootMappings);
-
-  const gradleFiles = findGradleFiles(filesToProcess);
-
-  for (const [source, gradleFile] of gradleFiles) {
-    const depsFile = buildFileToDepsMap.get(gradleFile);
-
-    dependencies = dependencies.concat(
-      processGradleDependencies(
-        depsFile,
-        gradleProjectToNxProjectMap,
-        source,
-        gradleFile
-      )
-    );
   }
   return dependencies;
 }
